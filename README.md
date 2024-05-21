@@ -35,24 +35,3 @@ sudo apt-get update
 sudo apt-get install python3-pip
 pip3 install pandas pycryptodome paho-mqtt
 
-### SUMO
-Follow the installation instructions from the SUMO website.
-
-NS-2
-Follow the installation instructions from the NS-2 website.
-
-Installation
-Clone the repository:
-...
-git clone https://github.com/your-username/DyBatch.git
-cd DyBatch
-
-...
-
-
-## Required Packedge
-pandas
-
-pycryptodome
-
-paho-mqtt
