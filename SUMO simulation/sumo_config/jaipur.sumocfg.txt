@@ -1,0 +1,18 @@
+<configuration>
+    <input>
+        <net-file value="jaipur.net.xml"/>
+        <route-files value="jaipur.rou.xml"/>
+        <additional-files value="add_tls.xml"/>
+    </input>
+    <time>
+        <begin value="0"/>
+        <end value="3600"/> <!-- Simulating for 1 hour -->
+    </time>
+    <processing>
+        <edge-data-output value="data/edge_data.xml"/>
+        <queue-output value="data/queue_output.xml"/>
+    </processing>
+    <report>
+        <log value="data/sumo_log.log"/>
+    </report>
+</configuration>

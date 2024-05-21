@@ -1,0 +1,98 @@
+import pandas as pd
+import random
+from datetime import datetime, timedelta
+
+# Define message types and their respective priorities
+message_types = [
+    'Emergency Alert',
+    'Infotainment',
+    'Traffic Alert',
+    'Lane Change'
+]
+
+# Sample messages for each type
+sample_messages = {
+    'Emergency Alert': [
+        "Accident on highway 101. Immediate help needed.",
+        "Ambulance approaching. Clear the way.",
+        "Fire reported near main street. Evacuate immediately.",
+        "Severe weather alert: Tornado warning in your area.",
+        "Police chase on highway 50. Avoid the area."
+    ],
+    'Infotainment': [
+        "New song release by artist X.",
+        "Weather update: Sunny day ahead.",
+        "Local sports team wins championship.",
+        "New restaurant opening downtown.",
+        "Traffic cameras show smooth flow on I-70."
+    ],
+    'Traffic Alert': [
+        "Heavy traffic on I-80. Expect delays.",
+        "Road construction on 5th Avenue.",
+        "Accident cleared on highway 101. Traffic resuming.",
+        "Traffic light malfunction at main street.",
+        "Heavy fog reported. Drive with caution."
+    ],
+    'Lane Change': [
+        "Vehicle merging into your lane.",
+        "Vehicle moving to the left lane.",
+        "Truck changing lanes ahead.",
+        "Motorcycle merging into the left lane.",
+        "Car merging from the right."
+    ]
+}
+
+# Generate random timestamps
+start_time = datetime.strptime('2024-05-17 08:00:00', '%Y-%m-%d %H:%M:%S')
+timestamps = [start_time + timedelta(minutes=i) for i in range(500)]
+
+# Generate the dataset
+data = []
+for i in range(1, 501):
+    message_type = random.choice(message_types)
+    message_content = random.choice(sample_messages[message_type])
+    timestamp = timestamps[i - 1]
+    data.append([i, message_type, message_content, timestamp])
+
+# Create DataFrame
+df = pd.DataFrame(data, columns=['Message ID', 'Message Type', 'Message Content', 'Timestamp'])
+
+# Define priority levels
+priority_levels = {
+    'Emergency Alert': 'High',
+    'Traffic Alert': 'Low',
+    'Infotainment': 'Low',
+    'Lane Change': 'Low'
+}
+
+# Classify messages based on priority
+df['Priority'] = df['Message Type'].map(priority_levels)
+
+# Calculate the number of messages
+N_high = df[df['Priority'] == 'High'].shape[0]
+N_low = df[df['Priority'] == 'Low'].shape[0]
+
+# Calculate the total time span in minutes
+time_span = (df['Timestamp'].max() - df['Timestamp'].min()).total_seconds() / 60  # in minutes
+
+# Calculate batch sizes using the corrected formulas
+batch_size_high = max(10, N_high / time_span)
+batch_size_low = min(30, N_low / time_span)
+
+# Ensure batch sizes are at least 1
+batch_size_high = max(1, int(batch_size_high))
+batch_size_low = max(1, int(batch_size_low))
+
+# Form batches
+high_priority_batches = [df[df['Priority'] == 'High'].iloc[i:i + batch_size_high] for i in range(0, N_high, batch_size_high)]
+low_priority_batches = [df[df['Priority'] == 'Low'].iloc[i:i + batch_size_low] for i in range(0, N_low, batch_size_low)]
+
+# Display results
+print(f"High priority messages batch size: {batch_size_high}")
+print(f"Low priority messages batch size: {batch_size_low}")
+print(f"Number of high priority batches: {len(high_priority_batches)}")
+print(f"Number of low priority batches: {len(low_priority_batches)}")
+
+# Save batches to files for verification and reformation processes
+pd.to_pickle(high_priority_batches, 'high_priority_batches.pkl')
+pd.to_pickle(low_priority_batches, 'low_priority_batches.pkl')

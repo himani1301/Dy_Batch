@@ -1,0 +1,76 @@
+# Define options
+set val(chan)           Channel/WirelessChannel  ;# channel type
+set val(prop)           Propagation/TwoRayGround ;# radio-propagation model
+set val(netif)          Phy/WirelessPhy          ;# network interface type
+set val(mac)            Mac/802_11               ;# MAC type
+set val(ifq)            Queue/DropTail/PriQueue  ;# interface queue type
+set val(ll)             LL                       ;# link layer type
+set val(ant)            Antenna/OmniAntenna      ;# antenna model
+set val(x)              2000                     ;# X dimension of the topography (in meters)
+set val(y)              2000                     ;# Y dimension of the topography (in meters)
+set val(ifqlen)         50                       ;# max packet in ifq
+set val(seed)           0.0                      ;# seed for random number gen.
+set val(adhocRouting)   AODV                     ;# routing protocol
+set val(nn)             50                       ;# number of mobilenodes
+set val(cp)             "traffic_scenario/traffic_scenario.tcl" ;# connection pattern file
+set val(sc)             ""                       ;# scenario file
+set val(stop)           1000.0                   ;# simulation time (in seconds)
+
+# Initialize the simulator
+set ns [new Simulator]
+
+# Set up the topography object
+set topo [new Topography]
+$topo load_flatgrid $val(x) $val(y)
+
+# Create the channel
+create-god $val(nn)
+
+# Configure the nodes
+$ns node-config -adhocRouting $val(adhocRouting) \
+                -llType $val(ll) \
+                -macType $val(mac) \
+                -ifqType $val(ifq) \
+                -ifqLen $val(ifqlen) \
+                -antType $val(ant) \
+                -propType $val(prop) \
+                -phyType $val(netif) \
+                -channelType $val(chan) \
+                -topoInstance $topo \
+                -agentTrace ON \
+                -routerTrace ON \
+                -macTrace OFF
+
+# Create the nodes
+for {set i 0} {$i < $val(nn)} {incr i} {
+    set node_($i) [$ns node]
+}
+
+# Define node movements
+for {set i 0} {$i < $val(nn)} {incr i} {
+    $ns at [expr $i*10] "$node_($i) setdest [expr $i*10.0] [expr $i*10.0] 5.0"
+}
+
+# Define the traffic pattern
+source $val(cp)
+
+# Define finish procedure
+proc finish {} {
+    global ns tracefile namfile
+    $ns flush-trace
+    close $tracefile
+    close $namfile
+    exec nam out.nam &
+    exit 0
+}
+
+# Setup trace files
+set tracefile [open out.tr w]
+set namfile [open out.nam w]
+
+$ns trace-all $tracefile
+$ns namtrace-all-wireless $namfile $val(x) $val(y)
+
+# Run the simulation
+$ns at $val(stop) "finish"
+$ns run

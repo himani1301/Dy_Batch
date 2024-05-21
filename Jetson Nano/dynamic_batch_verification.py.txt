@@ -1,0 +1,70 @@
+import pandas as pd
+from Crypto.PublicKey import ECC
+from Crypto.Signature import DSS
+from Crypto.Hash import SHA256
+from Crypto.Cipher import AES
+import binascii
+import random
+
+def generate_keys():
+    private_key = ECC.generate(curve='P-256')
+    public_key = private_key.public_key()
+    return private_key, public_key
+
+def generate_pseudonyms(sv_private_key):
+    x_j = random.randint(1, 1 << 256)
+    P = ECC.EccPoint(0, 1, curve='P-256')  # Dummy point for example
+    PID_j1 = x_j * P
+    PID_j2 = SHA256.new(str(x_j).encode() + str(sv_private_key).encode()).hexdigest()
+    return PID_j1, PID_j2
+
+def sign_message(BAM_j, tau_j, private_key):
+    message = BAM_j + str(tau_j)
+    h = SHA256.new(message.encode())
+    signer = DSS.new(private_key, 'fips-186-3')
+    signature = signer.sign(h)
+    return signature
+
+def encrypt_message(BAM_j, tau_j, pub_key):
+    message = BAM_j + str(tau_j)
+    key = pub_key.export_key(format='DER')[:16]  # Use part of the public key for AES key
+    cipher = AES.new(key, AES.MODE_EAX)
+    ciphertext, tag = cipher.encrypt_and_digest(message.encode())
+    return binascii.hexlify(cipher.nonce + tag + ciphertext).decode()
+
+def decrypt_message(encrypted_message, private_key):
+    encrypted_bytes = binascii.unhexlify(encrypted_message.encode())
+    nonce, tag, ciphertext = encrypted_bytes[:16], encrypted_bytes[16:32], encrypted_bytes[32:]
+    key = private_key.export_key(format='DER')[:16]  # Use part of the private key for AES key
+    cipher = AES.new(key, AES.MODE_EAX, nonce=nonce)
+    decrypted_message = cipher.decrypt_and_verify(ciphertext, tag)
+    return decrypted_message.decode()
+
+def verify_batch(batch, public_key):
+    for idx, row in batch.iterrows():
+        BAM_j = row['Message Content']
+        tau_j = row['Timestamp']
+        signature = sign_message(BAM_j, tau_j, private_key)
+        encrypted_message = encrypt_message(BAM_j, tau_j, public_key)
+        decrypted_message = decrypt_message(encrypted_message, private_key)
+        if BAM_j in decrypted_message:
+            print(f"Message ID {row['Message ID']} verification succeeded.")
+        else:
+            print(f"Message ID {row['Message ID']} verification failed.")
+
+# System Initialization
+private_key, public_key = generate_keys()
+
+# Load batches from files
+high_priority_batches = pd.read_pickle('high_priority_batches.pkl')
+low_priority_batches = pd.read_pickle('low_priority_batches.pkl')
+
+# Verify high priority batches
+print("\nVerifying high priority batches:")
+for batch in high_priority_batches:
+    verify_batch(batch, public_key)
+
+# Verify low priority batches
+print("\nVerifying low priority batches:")
+for batch in low_priority_batches:
+    verify_batch(batch, public_key)

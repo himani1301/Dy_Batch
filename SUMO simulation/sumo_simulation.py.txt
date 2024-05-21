@@ -1,0 +1,13 @@
+import os
+import subprocess
+
+def run_sumo_simulation():
+    # Set the path to the SUMO configuration file
+    sumo_config_file = "sumo_config/jaipur.sumocfg"
+    
+    # Run the SUMO simulation
+    sumo_command = f"sumo -c {sumo_config_file}"
+    subprocess.run(sumo_command, shell=True)
+
+if __name__ == "__main__":
+    run_sumo_simulation()

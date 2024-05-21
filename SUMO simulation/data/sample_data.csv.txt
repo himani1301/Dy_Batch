@@ -1,0 +1,6 @@
+Message ID,Message Type,Message Content,Timestamp,Priority
+1,Emergency Alert,"Accident on highway 101. Immediate help needed.",2024-05-17 08:00:00,High
+2,Infotainment,"New song release by artist X.",2024-05-17 08:01:00,Low
+3,Traffic Alert,"Heavy traffic on I-80. Expect delays.",2024-05-17 08:02:00,Low
+4,Lane Change,"Vehicle merging into your lane.",2024-05-17 08:03:00,Low
+...

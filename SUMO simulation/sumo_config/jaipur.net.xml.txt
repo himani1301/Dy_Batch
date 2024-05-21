@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<net version="1.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/net_file.xsd">
+    <location netOffset="0.00,0.00" convBoundary="0.00,0.00,1000.00,1000.00" origBoundary="0.00,0.00,1000.00,1000.00"/>
+    <type id="highway" priority="2"/>
+    <type id="residential" priority="1"/>
+    <type id="arterial" priority="1"/>
+    <type id="collector" priority="1"/>
+    
+    <junction id="0" x="0.0" y="0.0" type="traffic_light"/>
+    <junction id="1" x="500.0" y="0.0" type="priority"/>
+    <junction id="2" x="1000.0" y="0.0" type="priority"/>
+    <junction id="3" x="0.0" y="500.0" type="priority"/>
+    <junction id="4" x="500.0" y="500.0" type="priority"/>
+    <junction id="5" x="1000.0" y="500.0" type="priority"/>
+    
+    <edge id="0to1" from="0" to="1" type="arterial" priority="2"/>
+    <edge id="1to2" from="1" to="2" type="arterial" priority="2"/>
+    <edge id="0to3" from="0" to="3" type="residential" priority="1"/>
+    <edge id="3to4" from="3" to="4" type="residential" priority="1"/>
+    <edge id="4to5" from="4" to="5" type="residential" priority="1"/>
+    <edge id="1to4" from="1" to="4" type="collector" priority="1"/>
+</net>
